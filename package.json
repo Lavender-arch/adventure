@@ -1,0 +1,26 @@
+
+{
+  "name": "8jie-adventure",
+  "version": "1.0.0",
+  "description": "八姐的午后大冒险 - 桌面版",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.8jie.adventure",
+    "productName": "八姐的午后大冒险",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "https://cdn-icons-png.flaticon.com/512/3069/3069172.png"
+    }
+  }
+}
