@@ -2,11 +2,13 @@
 {
   "name": "8jie-adventure",
   "version": "1.0.0",
-  "description": "八姐的午后大冒险 - 桌面版",
+  "description": "八姐的午后大冒险 - 网页版与桌面版",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "echo 'Web build ready'",
+    "electron:build": "electron-builder",
+    "vercel-build": "echo 'Vercel static assets ready'"
   },
   "devDependencies": {
     "electron": "^31.0.0",

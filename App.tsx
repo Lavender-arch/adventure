@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { LEVELS, DEFAULT_ACTIVITIES, LOCAL_INSPIRATION_POOL, PRESET_ICONS } from './constants';
 import { GameState, ActivityOption, Difficulty } from './types';
@@ -13,6 +14,33 @@ const shuffleArray = <T,>(array: T[]): T[] => {
     [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
   }
   return newArray;
+};
+
+// 离线状态指示组件
+const OfflineBadge: React.FC = () => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  if (isOnline) return null;
+
+  return (
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] animate-bounce">
+      <div className="bg-amber-500/90 backdrop-blur-md text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 border border-white/20">
+        <i className="fas fa-wifi-slash"></i>
+        <span>离线探索模式已激活</span>
+      </div>
+    </div>
+  );
 };
 
 const WinCelebration: React.FC<{ active: boolean }> = ({ active }) => {
@@ -103,9 +131,20 @@ const App: React.FC = () => {
 
   const toggleMusic = () => {
     if (!audioRef.current) return;
-    if (isMusicPlaying) audioRef.current.pause();
-    else audioRef.current.play().catch(() => {});
-    setIsMusicPlaying(!isMusicPlaying);
+    if (isMusicPlaying) {
+      audioRef.current.pause();
+      setIsMusicPlaying(false);
+    } else {
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsMusicPlaying(true);
+        }).catch(error => {
+          console.log("Playback interrupted or prevented by browser:", error);
+          setIsMusicPlaying(false);
+        });
+      }
+    }
   };
 
   const handleUpdateActivity = (idx: number, field: keyof ActivityOption, value: string) => {
@@ -186,7 +225,6 @@ const App: React.FC = () => {
     setState(prev => ({ ...prev, selectedOptionIdx: idx }));
   };
 
-  // Fixed error: Corrected typo 'new Itinerary' to 'newItinerary' to properly declare and use the local variable.
   const handleScratchComplete = () => {
     if (state.selectedOptionIdx !== null) {
       const rewardTitle = currentLevel.optionsPool[state.selectedOptionIdx].title;
@@ -235,6 +273,7 @@ const App: React.FC = () => {
   if (isConfiguring) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8 bg-[#f0f9ff] overflow-y-auto w-full">
+        <OfflineBadge />
         <main className="w-full max-w-[1100px] bg-white rounded-[3rem] shadow-2xl p-6 sm:p-12 border border-white">
           <div className="mb-10 text-center space-y-4">
             <h2 className="text-3xl font-black text-gray-800">午后行程计划 · 配置锦囊</h2>
@@ -289,6 +328,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center p-4 sm:p-8 bg-[#f0f9ff] w-full">
+      <OfflineBadge />
       <WinCelebration active={isCelebrating} />
       <button onClick={toggleMusic} className="fixed top-6 right-6 z-50 w-12 h-12 bg-white/80 rounded-full shadow-lg flex items-center justify-center text-sky-500"><i className={`fas ${isMusicPlaying ? 'fa-music animate-spin-slow' : 'fa-play'}`}></i></button>
 
